@@ -1,12 +1,14 @@
 <?php
 require_once __DIR__ . '/GenericDAO.php';
 
-class ActividadesDAO extends GenericDAO {
+class ActividadesDAO extends GenericDAO
+{
 
     /**
      * Obtiene todas las actividades, opcionalmente filtradas por fecha
      */
-    public function getAllActividades($dateFilter = null) {
+    public function getAllActividades($dateFilter = null)
+    {
         try {
             if ($dateFilter) {
                 $stmt = $this->conn->prepare(
@@ -22,7 +24,6 @@ class ActividadesDAO extends GenericDAO {
             $stmt->execute();
             $result = $stmt->get_result();
             return $result;
-
         } catch (mysqli_sql_exception $e) {
             throw new Exception("Error al obtener actividades: " . $e->getMessage());
         }
@@ -31,14 +32,14 @@ class ActividadesDAO extends GenericDAO {
     /**
      * Inserta una nueva actividad en la base de datos
      */
-    public function insertActividad($type, $monitor, $place, $date) {
+    public function insertActividad($type, $monitor, $place, $date)
+    {
         try {
             $stmt = $this->conn->prepare(
                 "INSERT INTO activities (type, monitor, place, date) VALUES (?, ?, ?, ?)"
             );
             $stmt->bind_param("ssss", $type, $monitor, $place, $date);
             return $stmt->execute();
-
         } catch (mysqli_sql_exception $e) {
             throw new Exception("Error al insertar actividad: " . $e->getMessage());
         }
@@ -47,7 +48,8 @@ class ActividadesDAO extends GenericDAO {
     /**
      * Obtiene una actividad por ID (para editar o borrar)
      */
-    public function getActividadById($id) {
+    public function getActividadById($id)
+    {
         try {
             $stmt = $this->conn->prepare("SELECT * FROM activities WHERE id = ?");
             $stmt->bind_param("i", $id);
@@ -61,7 +63,8 @@ class ActividadesDAO extends GenericDAO {
     /**
      * Actualiza una actividad existente
      */
-    public function updateActividad($id, $type, $monitor, $place, $date) {
+    public function updateActividad($id, $type, $monitor, $place, $date)
+    {
         try {
             $stmt = $this->conn->prepare(
                 "UPDATE activities SET type = ?, monitor = ?, place = ?, date = ? WHERE id = ?"
@@ -76,7 +79,8 @@ class ActividadesDAO extends GenericDAO {
     /**
      * Elimina una actividad por ID
      */
-    public function deleteActividad($id) {
+    public function deleteActividad($id)
+    {
         try {
             $stmt = $this->conn->prepare("DELETE FROM activities WHERE id = ?");
             $stmt->bind_param("i", $id);
@@ -86,4 +90,3 @@ class ActividadesDAO extends GenericDAO {
         }
     }
 }
-?>

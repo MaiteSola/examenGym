@@ -1,24 +1,29 @@
 <?php
+
 /**
  * SessionHelper – Solo guarda la última página visitada
  */
-class SessionHelper {
+class SessionHelper
+{
 
-    public static function start(): void {
+    public static function start(): void
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
     }
 
     // Guardar la página actual (solo la ruta, sin parámetros)
-    public static function setLastPage(): void {
+    public static function setLastPage(): void
+    {
         self::start();
         $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $_SESSION['last_page'] = $path;
     }
 
     // Obtener la última página (o listaActividades si no hay)
-    public static function getLastPage(): string {
+    public static function getLastPage(): string
+    {
         self::start();
         $last = $_SESSION['last_page'] ?? '';
         if ($last && $path = parse_url($last, PHP_URL_PATH)) {
@@ -28,7 +33,8 @@ class SessionHelper {
     }
 
     // Limpiar sesión (opcional, para pruebas)
-    public static function destroy(): void {
+    public static function destroy(): void
+    {
         self::start();
         session_unset();
         session_destroy();

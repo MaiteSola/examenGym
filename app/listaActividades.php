@@ -29,13 +29,12 @@ $actividades = $dao->getAllActividades($dateFilter);
                 <hr />
                 <form action="" method="get" class="row g-2 align-items-center">
                     <div class="col-auto">
-                        <input 
-                            name="activityDate" 
-                            id="activityDate" 
-                            class="form-control" 
+                        <input
+                            name="activityDate"
+                            id="activityDate"
+                            class="form-control"
                             type="date"
-                            value="<?= htmlspecialchars($dateFilter ?? '') ?>"
-                        />
+                            value="<?= htmlspecialchars($dateFilter ?? '') ?>" />
                     </div>
                     <div class="col-auto">
                         <button class="btn btn-outline-success" type="submit">Filtrar</button>
@@ -53,26 +52,23 @@ $actividades = $dao->getAllActividades($dateFilter);
             <?php foreach ($actividades as $activity): ?>
                 <div class="col-sm-12 col-md-6 col-lg-4">
                     <div class="card mb-4 shadow-sm text-center">
-                        <img 
-                            class="card-img-top w-50 p-3 img-fluid mx-auto" 
-                            src="../assets/img/<?= htmlspecialchars($activity['type']) ?>.png" 
-                            alt="<?= htmlspecialchars($activity['type']) ?>"
-                        >
+                        <img
+                            class="card-img-top w-50 p-3 img-fluid mx-auto"
+                            src="../assets/img/<?= htmlspecialchars($activity['type']) ?>.png"
+                            alt="<?= htmlspecialchars($activity['type']) ?>">
                         <div class="card-body">
                             <h2 class="card-title h5"><?= htmlspecialchars($activity['place']) ?></h2>
                             <p class="card-text mb-1"><?= date('d M Y H:i', strtotime($activity['date'])) ?></p>
                             <p class="card-text fw-semibold"><?= htmlspecialchars($activity['monitor']) ?></p>
                         </div>
                         <div class="card-footer text-center">
-                            <a 
-                                class="btn btn-success btn-sm text-white me-2 px-3" 
-                                href="editarActividad.php?id=<?= $activity['id'] ?>"
-                            >Modificar</a>
-                            <a 
-                                class="btn btn-danger btn-sm text-white px-3" 
-                                href="borrarActividad.php?id=<?= $activity['id'] ?>" 
-                                onclick="return confirm('¿Seguro que quieres borrar esta actividad?');"
-                            >Borrar</a>
+                            <a
+                                class="btn btn-success btn-sm text-white me-2 px-3"
+                                href="editarActividad.php?id=<?= $activity['id'] ?>">Modificar</a>
+                            <a
+                                class="btn btn-danger btn-sm text-white px-3"
+                                href="borrarActividad.php?id=<?= $activity['id'] ?>"
+                                onclick="return confirm('¿Seguro que quieres borrar esta actividad?');">Borrar</a>
                         </div>
                     </div>
                 </div>
