@@ -1,15 +1,16 @@
 <?php
-require_once __DIR__ . '/utils/sessionHelper.php';
+require_once __DIR__ . '/utils/SessionHelper.php';
 
+// Iniciar sesión
 SessionHelper::start();
 
-// Si no hay sesión → al listado público
-if (!SessionHelper::isLogged()) {
-    header('Location: /maite_sola/dw_01Eval_4VGym/app/listaActividades.php');
+// Si hay última página guardada → ir ahí
+if (!empty($_SESSION['last_page'])) {
+    $lastPage = SessionHelper::getLastPage();
+    header("Location: $lastPage");
     exit();
 }
 
-// Usuario logueado → redirige a la última página visitada
-$lastPage = SessionHelper::getLastPage();
-header("Location: $lastPage");
+// Si no hay nada → ir al listado
+header('Location: /maite_sola/dw_01Eval_4VGym/app/listaActividades.php');
 exit();
