@@ -1,77 +1,36 @@
 <?php
 /**
- * SessionHelper
- * Manejo de sesión y navegación para 4VGym
+ * SessionHelper – Solo guarda la última página visitada
  */
 class SessionHelper {
 
-    /** Inicia la sesión si no está activa */
     public static function start(): void {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
     }
 
-    /* --- Gestión de usuario --- */
-
-    public static function setUser(array $user): void {
+    // Guardar la página actual (solo la ruta, sin parámetros)
+    public static function setLastPage(): void {
         self::start();
-        $_SESSION['user'] = [
-            'id' => $user['id'] ?? null,
-            'username' => $user['username'] ?? null,
-            'role' => $user['role'] ?? 'monitor'
-        ];
+        $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $_SESSION['last_page'] = $path;
     }
 
-    public static function getUser(): ?array {
-        self::start();
-        return $_SESSION['user'] ?? null;
-    }
-
-    public static function isLogged(): bool {
-        self::start();
-        return isset($_SESSION['user']);
-    }
-
-    public static function clearUser(): void {
-        self::start();
-        unset($_SESSION['user']);
-    }
-
-    /* --- Navegación --- */
-
-    public static function setLastPage(string $page): void {
-        self::start();
-        $_SESSION['last_page'] = $page;
-    }
-
+    // Obtener la última página (o listaActividades si no hay)
     public static function getLastPage(): string {
         self::start();
-        return $_SESSION['last_page'] ?? '/app/listaActividades.php';
+        $last = $_SESSION['last_page'] ?? '';
+        if ($last && $path = parse_url($last, PHP_URL_PATH)) {
+            return $path;
+        }
+        return '/maite_sola/dw_01Eval_4VGym/app/listaActividades.php';
     }
 
-    public static function clearLastPage(): void {
-        self::start();
-        unset($_SESSION['last_page']);
-    }
-
+    // Limpiar sesión (opcional, para pruebas)
     public static function destroy(): void {
         self::start();
         session_unset();
         session_destroy();
-    }
-
-    /** Guardar la página actual automáticamente si no es una página excluida */
-    public static function registerCurrentPage(array $excludePages = []): void {
-        self::start();
-        if (!self::isLogged()) return;
-
-        $currentPage = $_SERVER['REQUEST_URI'];
-        foreach ($excludePages as $page) {
-            if (str_contains($currentPage, $page)) {
-                return;
-            }
-        }
-        self::setLastPage($currentPage);
     }
 }

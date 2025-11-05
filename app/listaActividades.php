@@ -3,9 +3,10 @@ require_once __DIR__ . '/../templates/header.php';
 require_once __DIR__ . '/../utils/sessionHelper.php';
 require_once __DIR__ . '/../persistence/dao/ActividadesDAO.php';
 
-// Iniciar sesión y registrar última página automáticamente
-// Excluimos páginas como login.php o logout.php si las hubiera
-SessionHelper::registerCurrentPage();
+
+
+SessionHelper::setLastPage();
+
 
 // Instanciar el DAO
 $dao = new ActividadesDAO();
