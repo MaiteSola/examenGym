@@ -2,110 +2,101 @@
 
 class PersistentManager {
 
-    /** @var PersistentManager|null */
-    private static $instance = null;
+    private static ?self $instance = null;
+    private static ?mysqli $connection = null;
 
-    /** @var mysqli|null */
-    private static $connection = null;
+    private string $hostBD;
+    private string $userBD;
+    private string $psswdBD;
+    private string $nameBD;
 
-    /** Parámetros de conexión */
-    private $userBD = "";
-    private $psswdBD = "";
-    private $nameBD = "";
-    private $hostBD = "";
-
-    /**
-     * Devuelve la instancia única (Singleton)
-     */
+    /** Singleton: devuelve la única instancia */
     public static function getInstance(): self {
-        if (!self::$instance instanceof self) {
+        if (!self::$instance) {
             self::$instance = new self();
         }
         return self::$instance;
     }
 
-    /**
-     * Constructor privado: establece conexión a la BD
-     */
+    /** Constructor privado: abre la conexión */
     private function __construct() {
-        // Mostrar errores SQL durante desarrollo
         mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-
-        $this->establishCredentials();
+        $this->loadCredentials();
 
         try {
-            self::$connection = mysqli_connect(
+            self::$connection = new mysqli(
                 $this->hostBD,
                 $this->userBD,
                 $this->psswdBD,
                 $this->nameBD
             );
-            mysqli_set_charset(self::$connection, 'utf8');
+            self::$connection->set_charset('utf8mb4');
         } catch (mysqli_sql_exception $e) {
-            error_log("❌ Error de conexión a la BD: " . $e->getMessage());
-            throw new Exception("Error al conectar con la base de datos.");
+            throw new Exception("❌ Error de conexión a la BD: " . $e->getMessage());
         }
     }
 
-    /**
-     * Lee las credenciales desde el JSON
-     */
-    private function establishCredentials(): void {
-        $path = __DIR__ . DIRECTORY_SEPARATOR . 'credentials.json';
-
+    /** Carga credenciales desde credentials.json */
+    private function loadCredentials(): void {
+        $path = __DIR__ . '/credentials.json';
         if (!file_exists($path)) {
-            throw new Exception("❌ Archivo credentials.json no encontrado en: $path");
+            throw new Exception("Archivo credentials.json no encontrado en $path");
         }
 
-        $credentialsJSON = file_get_contents($path);
-        $credentials = json_decode($credentialsJSON, true);
-
-        if (!$credentials) {
-            throw new Exception("❌ Error al leer credentials.json (JSON mal formado)");
+        $data = json_decode(file_get_contents($path), true);
+        if (!$data) {
+            throw new Exception("Error al leer credentials.json");
         }
 
-        $this->userBD = $credentials["user"] ?? "";
-        $this->psswdBD = $credentials["password"] ?? "";
-        $this->nameBD = $credentials["name"] ?? "";
-        $this->hostBD = $credentials["host"] ?? "localhost";
+        $this->hostBD = $data['host'] ?? 'localhost';
+        $this->userBD = $data['user'] ?? '';
+        $this->psswdBD = $data['password'] ?? '';
+        $this->nameBD = $data['name'] ?? '';
     }
 
-    /**
-     * Devuelve la conexión activa
-     */
+    /** Devuelve conexión mysqli */
     public function get_connection(): mysqli {
         return self::$connection;
     }
 
-    /**
-     * Cierra la conexión actual
-     */
+    /** Cierra la conexión */
     public function close_connection(): void {
         if (self::$connection) {
-            mysqli_close(self::$connection);
+            self::$connection->close();
             self::$connection = null;
         }
     }
 
-    /**
-     * Obtiene un usuario por email (ejemplo de método útil)
-     */
-    public function getUserByEmail(string $email): ?array {
-        $conn = $this->get_connection();
-        $stmt = mysqli_prepare($conn, "SELECT * FROM usuarios WHERE email = ?");
-        mysqli_stmt_bind_param($stmt, "s", $email);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
+    /* -------------------------------------------------------------------
+       MÉTODOS ESPECÍFICOS PARA ACTIVIDADES
+       ------------------------------------------------------------------- */
 
-        return $result && mysqli_num_rows($result) > 0
-            ? mysqli_fetch_assoc($result)
-            : null;
+    /**
+     * Obtiene todas las actividades (opcionalmente filtradas por fecha)
+     */
+    public function getActivities(?string $date = null): mysqli_result {
+        $conn = self::$connection;
+        if ($date) {
+            $stmt = $conn->prepare("SELECT * FROM activities WHERE DATE(date) = ? ORDER BY date DESC");
+            $stmt->bind_param('s', $date);
+        } else {
+            $stmt = $conn->prepare("SELECT * FROM activities ORDER BY date DESC");
+        }
+
+        $stmt->execute();
+        return $stmt->get_result();
     }
 
-    /* --- Métodos auxiliares (opcionales) --- */
+    // MÉTODO PARA NUEVAACTIVIDAD
 
-    public function get_hostBD(): string { return $this->hostBD; }
-    public function get_usuarioBD(): string { return $this->userBD; }
-    public function get_psswdBD(): string { return $this->psswdBD; }
-    public function get_nombreBD(): string { return $this->nameBD; }
+        /**
+     * Inserta una nueva actividad en la base de datos.
+     */
+    public function insertActivity(string $type, string $monitor, string $place, string $date): bool {
+        $conn = self::$connection;
+        $stmt = $conn->prepare("INSERT INTO activities (type, monitor, place, date) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param('ssss', $type, $monitor, $place, $date);
+        return $stmt->execute();
+    }
+
 }

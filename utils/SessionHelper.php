@@ -1,101 +1,71 @@
 <?php
 /**
  * SessionHelper
- *
- * Utilidades para gestionar la sesión de usuario
- * y la navegación de la aplicación 4VGym.
- *
- * Adaptado para 4VGym
+ * Manejo de sesión y navegación para 4VGym
  */
-
 class SessionHelper {
 
-    /** Inicia sesión si no está activa */
-    public static function start() {
+    /** Inicia la sesión si no está activa */
+    public static function start(): void {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
     }
 
-    /* ------------------------------
-       USUARIO
-    ------------------------------ */
+    /* --- Gestión de usuario --- */
 
-    /** Guarda los datos básicos del usuario logueado */
-    public static function setUser(array $user) {
+    /** Guarda usuario logueado */
+    public static function setUser(array $user): void {
         self::start();
-        $_SESSION['user_id'] = $user['id'] ?? null;
-        $_SESSION['username'] = $user['username'] ?? null;
-        $_SESSION['role'] = $user['role'] ?? 'monitor'; // Por defecto monitor
+        $_SESSION['user'] = [
+            'id' => $user['id'] ?? null,
+            'username' => $user['username'] ?? null,
+            'role' => $user['role'] ?? 'monitor'
+        ];
     }
 
-    /** Devuelve el ID del usuario */
-    public static function getUserId(): ?int {
+    /** Devuelve los datos del usuario o null */
+    public static function getUser(): ?array {
         self::start();
-        return $_SESSION['user_id'] ?? null;
+        return $_SESSION['user'] ?? null;
     }
 
-    /** Devuelve el nombre de usuario */
-    public static function getUsername(): ?string {
-        self::start();
-        return $_SESSION['username'] ?? null;
-    }
-
-    /** Devuelve el rol del usuario */
-    public static function getUserRole(): ?string {
-        self::start();
-        return $_SESSION['role'] ?? null;
-    }
-
-    /** Comprueba si hay sesión iniciada */
+    /** Devuelve true si hay sesión iniciada */
     public static function isLogged(): bool {
         self::start();
-        return !empty($_SESSION['user_id']);
+        return isset($_SESSION['user']);
     }
 
-    /** Cierra la sesión del usuario */
-    public static function clearUser() {
+    /** Cierra sesión */
+    public static function clearUser(): void {
         self::start();
-        unset($_SESSION['user_id'], $_SESSION['username'], $_SESSION['role']);
+        unset($_SESSION['user']);
     }
 
-    /* ------------------------------
-       NAVEGACIÓN
-    ------------------------------ */
+    /* --- Navegación --- */
 
-    /** Guarda la última página visitada (para redirecciones) */
-    public static function setLastPage(string $page) {
+    /** Guarda la última página visitada */
+    public static function setLastPage(string $page): void {
         self::start();
         $_SESSION['last_page'] = $page;
     }
 
-    /** Obtiene la última página visitada */
+    /** Devuelve la última página o el listado */
     public static function getLastPage(): string {
         self::start();
-        return $_SESSION['last_page'] ?? 'pages/listaActividades.php';
+        return $_SESSION['last_page'] ?? '/app/listaActividades.php';
     }
 
-    /** Limpia el registro de última página */
-    public static function clearLastPage() {
+    /** Borra la última página registrada */
+    public static function clearLastPage(): void {
         self::start();
         unset($_SESSION['last_page']);
     }
 
-    /* ------------------------------
-       SESIÓN GENERAL
-    ------------------------------ */
-
-    /** Destruye completamente la sesión */
-    public static function destroy() {
+    /** Cierre completo de sesión */
+    public static function destroy(): void {
         self::start();
-        $_SESSION = [];
-        if (ini_get("session.use_cookies")) {
-            $params = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000,
-                $params["path"], $params["domain"],
-                $params["secure"], $params["httponly"]
-            );
-        }
+        session_unset();
         session_destroy();
     }
 }
