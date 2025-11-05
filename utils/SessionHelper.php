@@ -14,7 +14,6 @@ class SessionHelper {
 
     /* --- Gestión de usuario --- */
 
-    /** Guarda usuario logueado */
     public static function setUser(array $user): void {
         self::start();
         $_SESSION['user'] = [
@@ -24,19 +23,16 @@ class SessionHelper {
         ];
     }
 
-    /** Devuelve los datos del usuario o null */
     public static function getUser(): ?array {
         self::start();
         return $_SESSION['user'] ?? null;
     }
 
-    /** Devuelve true si hay sesión iniciada */
     public static function isLogged(): bool {
         self::start();
         return isset($_SESSION['user']);
     }
 
-    /** Cierra sesión */
     public static function clearUser(): void {
         self::start();
         unset($_SESSION['user']);
@@ -44,28 +40,38 @@ class SessionHelper {
 
     /* --- Navegación --- */
 
-    /** Guarda la última página visitada */
     public static function setLastPage(string $page): void {
         self::start();
         $_SESSION['last_page'] = $page;
     }
 
-    /** Devuelve la última página o el listado */
     public static function getLastPage(): string {
         self::start();
         return $_SESSION['last_page'] ?? '/app/listaActividades.php';
     }
 
-    /** Borra la última página registrada */
     public static function clearLastPage(): void {
         self::start();
         unset($_SESSION['last_page']);
     }
 
-    /** Cierre completo de sesión */
     public static function destroy(): void {
         self::start();
         session_unset();
         session_destroy();
+    }
+
+    /** Guardar la página actual automáticamente si no es una página excluida */
+    public static function registerCurrentPage(array $excludePages = []): void {
+        self::start();
+        if (!self::isLogged()) return;
+
+        $currentPage = $_SERVER['REQUEST_URI'];
+        foreach ($excludePages as $page) {
+            if (str_contains($currentPage, $page)) {
+                return;
+            }
+        }
+        self::setLastPage($currentPage);
     }
 }

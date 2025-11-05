@@ -1,21 +1,15 @@
 <?php
 require_once __DIR__ . '/utils/sessionHelper.php';
 
-/*
-  Este index es el punto de entrada principal de la app 4VGym.
-  - Si no hay sesión, redirige al listado de actividades (página pública).
-  - Si hay sesión, redirige a la última página visitada.
-*/
-
 SessionHelper::start();
 
-// Si no hay sesión activa → al listado
+// Si no hay sesión → al listado público
 if (!SessionHelper::isLogged()) {
-    header('Location: app/listaActividades.php');
+    header('Location: /maite_sola/dw_01Eval_4VGym/app/listaActividades.php');
     exit();
 }
 
-// Si hay sesión → redirigir a la última página vista
+// Usuario logueado → redirige a la última página visitada
 $lastPage = SessionHelper::getLastPage();
 header("Location: $lastPage");
 exit();

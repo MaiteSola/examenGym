@@ -1,14 +1,14 @@
 <?php
 require_once __DIR__ . '/../templates/header.php';
 require_once __DIR__ . '/../utils/sessionHelper.php';
-require_once __DIR__ . '/../persistence/conf/PersistentManager.php';
+require_once __DIR__ . '/../persistence/dao/ActividadesDAO.php';
 
-// Iniciar sesión y registrar última página vista
+// Iniciar sesión y registrar la página actual
 SessionHelper::start();
-SessionHelper::setLastPage('/app/nuevaActividad.php');
+SessionHelper::setLastPage($_SERVER['REQUEST_URI']); // Guarda la URL en sesión
 
-// Obtener instancia del gestor de persistencia
-$pm = PersistentManager::getInstance();
+// Crear instancia del DAO
+$dao = new ActividadesDAO();
 $message = '';
 
 // Procesar formulario al enviar
@@ -20,8 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($type && $monitor && $place && $date) {
         try {
-            $ok = $pm->insertActivity($type, $monitor, $place, $date);
+            $ok = $dao->insertActividad($type, $monitor, $place, $date);
             if ($ok) {
+                // Redirigir al listado después de guardar
                 header('Location: listaActividades.php');
                 exit();
             } else {
